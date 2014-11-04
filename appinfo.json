@@ -1,0 +1,19 @@
+{
+    "appKeys": {},
+    "capabilities": [
+        ""
+    ],
+    "companyName": "tibault.damman@gmail.com",
+    "longName": "accel_test",
+    "projectType": "native",
+    "resources": {
+        "media": []
+    },
+    "shortName": "accel_test",
+    "uuid": "4a3e238d-89d3-4aca-85dc-b46f6dd44fd6",
+    "versionCode": 1,
+    "versionLabel": "1.0",
+    "watchapp": {
+        "watchface": false
+    }
+}
