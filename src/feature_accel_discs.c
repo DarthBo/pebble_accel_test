@@ -1,8 +1,8 @@
 #include "pebble.h"
 
 #define MATH_PI 3.141592653589793238462
-#define DISC_DENSITY 0.25
-#define ACCEL_RATIO 0.025
+#define DISC_DENSITY 0.50
+#define ACCEL_RATIO 0.05
 #define ACCEL_STEP_MS 50
 
 typedef struct Vec2d {
@@ -55,7 +55,7 @@ static void disc_apply_accel(Ball *disc, AccelData accel) {
 
 static void disc_update(Ball *disc) {
   const GRect frame = window_frame;
-  double e = 0.5;
+  double e = 0.25;
   if ((disc->pos.x - disc->radius < 0 && disc->vel.x < 0)
     || (disc->pos.x + disc->radius > frame.size.w && disc->vel.x > 0)) {
     disc->vel.x = -disc->vel.x * e;
