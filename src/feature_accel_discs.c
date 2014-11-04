@@ -1,9 +1,8 @@
 #include "pebble.h"
 
 #define MATH_PI 3.141592653589793238462
-#define NUM_DISCS 20
 #define DISC_DENSITY 0.25
-#define ACCEL_RATIO 0.05
+#define ACCEL_RATIO 0.025
 #define ACCEL_STEP_MS 50
 
 typedef struct Vec2d {
@@ -11,16 +10,14 @@ typedef struct Vec2d {
   double y;
 } Vec2d;
 
-typedef struct Disc {
+typedef struct Ball {
   Vec2d pos;
   Vec2d vel;
   double mass;
   double radius;
-} Disc;
+} Ball;
 
-static Disc discs[NUM_DISCS];
-
-static double next_radius = 3;
+static Ball ball;
 
 static Window *window;
 
@@ -30,34 +27,33 @@ static Layer *disc_layer;
 
 static AppTimer *timer;
 
-static double disc_calc_mass(Disc *disc) {
-  return MATH_PI * disc->radius * disc->radius * DISC_DENSITY;
+static double disc_calc_mass(Ball *ball) {
+  return MATH_PI * ball->radius * ball->radius * DISC_DENSITY;
 }
 
-static void disc_init(Disc *disc) {
+static void disc_init(Ball *ball) {
   GRect frame = window_frame;
-  disc->pos.x = frame.size.w/2;
-  disc->pos.y = frame.size.h/2;
-  disc->vel.x = 0;
-  disc->vel.y = 0;
-  disc->radius = next_radius;
-  disc->mass = disc_calc_mass(disc);
-  next_radius += 0.5;
+  ball->pos.x = frame.size.w/2;
+  ball->pos.y = frame.size.h/2;
+  ball->vel.x = 0;
+  ball->vel.y = 0;
+  ball->radius = 7;
+  ball->mass = disc_calc_mass(ball);
 }
 
-static void disc_apply_force(Disc *disc, Vec2d force) {
+static void disc_apply_force(Ball *disc, Vec2d force) {
   disc->vel.x += force.x / disc->mass;
   disc->vel.y += force.y / disc->mass;
 }
 
-static void disc_apply_accel(Disc *disc, AccelData accel) {
+static void disc_apply_accel(Ball *disc, AccelData accel) {
   Vec2d force;
   force.x = accel.x * ACCEL_RATIO;
   force.y = -accel.y * ACCEL_RATIO;
   disc_apply_force(disc, force);
 }
 
-static void disc_update(Disc *disc) {
+static void disc_update(Ball *disc) {
   const GRect frame = window_frame;
   double e = 0.5;
   if ((disc->pos.x - disc->radius < 0 && disc->vel.x < 0)
@@ -72,15 +68,13 @@ static void disc_update(Disc *disc) {
   disc->pos.y += disc->vel.y;
 }
 
-static void disc_draw(GContext *ctx, Disc *disc) {
+static void disc_draw(GContext *ctx, Ball *disc) {
   graphics_context_set_fill_color(ctx, GColorWhite);
   graphics_fill_circle(ctx, GPoint(disc->pos.x, disc->pos.y), disc->radius);
 }
 
 static void disc_layer_update_callback(Layer *me, GContext *ctx) {
-  for (int i = 0; i < NUM_DISCS; i++) {
-    disc_draw(ctx, &discs[i]);
-  }
+    disc_draw(ctx, &ball);
 }
 
 static void timer_callback(void *data) {
@@ -88,11 +82,9 @@ static void timer_callback(void *data) {
 
   accel_service_peek(&accel);
 
-  for (int i = 0; i < NUM_DISCS; i++) {
-    Disc *disc = &discs[i];
-    disc_apply_accel(disc, accel);
-    disc_update(disc);
-  }
+  Ball *disc = &ball;
+  disc_apply_accel(disc, accel);
+  disc_update(disc);
 
   layer_mark_dirty(disc_layer);
 
@@ -107,9 +99,7 @@ static void window_load(Window *window) {
   layer_set_update_proc(disc_layer, disc_layer_update_callback);
   layer_add_child(window_layer, disc_layer);
 
-  for (int i = 0; i < NUM_DISCS; i++) {
-    disc_init(&discs[i]);
-  }
+  disc_init(&ball);
 }
 
 static void window_unload(Window *window) {
